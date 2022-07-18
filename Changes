@@ -1,12 +1,14 @@
-Revision history for Perl extension VOTable.
+Revision history for {{$dist->name}}
 
-1.0   Monday 7 April 2003
+{{$NEXT}}
+
+1.0   2003-04-07
 
 - Software has been completely rewritten for speed.
 
 - Code is now based on XML::LibXML/libxml2, rather than
 XML::DOM/expat.
 
-0.01  Friday 6 September 2002
+0.01  2002-09-06
 
 - Initial version. Intended to completely replace VOTABLE classes.

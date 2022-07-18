@@ -1,0 +1,12 @@
+^Build$
+^Astro-VO-VOTable
+~$
+^blib/
+^pm_to_blib
+^.git
+^MYMETA
+^cover_db/
+^_build_params
+\.orig$
+^dev
+^local
