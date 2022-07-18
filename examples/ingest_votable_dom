@@ -1,0 +1,880 @@
+#!/usr/bin/perl -w
+
+# This program will illustrate the process of reading in a VOTABLE
+# document as a Astro::VO::VOTable::Document object, and then
+# converting that object to a hierarchy of Perl data structures.
+
+# This version differs from the original version in ingest_votable_vo
+# in that the conversions are done directly using XML::LibXML objects,
+# rather than using VOTable objects.
+
+#------------------------------------------------------------------------------
+
+# External modules
+
+use Data::Dumper;
+
+use XML::LibXML;
+
+#------------------------------------------------------------------------------
+
+# Subroutine prototypes
+sub _convert_document($);
+sub _convert_votable($);
+# sub _convert_resource($);
+sub _convert_description($);
+sub _convert_definitions($);
+# sub _convert_info($);
+sub _convert_param($);
+# sub _convert_table($);
+# sub _convert_field($);
+# sub _convert_group($);
+sub _convert_values($);
+sub _convert_min($);
+sub _convert_max($);
+sub _convert_option($);
+sub _convert_link($);
+# sub _convert_data($);
+# sub _convert_tabledata($);
+# sub _convert_td($);
+# sub _convert_tr($);
+# sub _convert_fits($);
+# sub _convert_binary($);
+# sub _convert_stream($);
+sub _convert_coosys($);
+
+#------------------------------------------------------------------------------
+
+{
+
+    # Save arguments.
+    my($path) = @ARGV;
+
+    # Variable definitions
+
+    # XML parser to ingest the document.
+    my($parser);
+
+    # XML::LibXML::Document (DOM) object for the document to convert.
+    my($dom_document);
+
+    # Perl version of the document.
+    my($document);
+
+    #--------------------------------------------------------------------------
+
+    # Create the XML parser.
+    $parser = XML::LibXML->new or die;
+
+    # Read the file.
+    print "Reading $path...\n";
+    $dom_document = eval { $parser->parse_file($path) } or die;
+    print "done.\n";
+
+    # Convert the Document object to a Perl structure.
+    print "Converting...\n";
+    $document = _convert_document($dom_document);
+    print "done.\n";
+
+    # Print the contents.
+    print "File $path contained:\n", Dumper($document);
+
+    exit(0);
+
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_document($)
+{
+    my($dom_document) = @_;
+    my($document);
+    my($dom_votable);
+    my($votable);
+
+    $document = {};
+    $dom_votable = $dom_document->documentElement or die;
+    $votable = _convert_votable($dom_votable) or die;
+    push(@{$document->{elements}}, $votable);
+
+    return($document);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_votable($)
+{
+    my($dom_votable) = @_;
+    my($votable);
+    my($name, $value);
+    my($node, $tag);
+
+    $votable = {};
+    $votable->{tag} = 'VOTABLE';
+
+    # Attributes
+    foreach $name (qw(ID version)) {
+	$value = $dom_votable->getAttribute($name);
+	$votable->{attributes}{$name} = $value if defined($value);
+    }
+
+    # Child elements
+    foreach $node ($dom_votable->childNodes) {
+ 	$tag = $node->nodeName;
+ 	if ($tag eq 'DESCRIPTION') {
+ 	    push(@{$votable->{elements}}, _convert_description($node));
+ 	} elsif ($tag eq 'DEFINITIONS') {
+ 	    push(@{$votable->{elements}}, _convert_definitions($node));
+ 	} elsif ($tag eq 'INFO') {
+# 	    push(@{$votable->{elements}}, _convert_info($node));
+ 	} elsif ($tag eq 'RESOURCE') {
+# 	    push(@{$votable->{elements}}, _convert_resource($node));
+ 	} elsif ($tag eq 'comment') {
+ 	} elsif ($tag eq 'text') {
+ 	} else {
+ 	    die("Invalid tag for VOTABLE child: $tag!");
+ 	}
+    }
+
+    # Text content (none)
+
+    return($votable);
+}
+
+#------------------------------------------------------------------------------
+=pod
+sub _convert_resource($)
+{
+    my($dom_resource) = @_;
+    my($vo_resource);
+    my($resource);
+    my($name, $id, $type);
+    my($node, $tag);
+
+    $vo_resource = Astro::VO::VOTable::RESOURCE->new($dom_resource);
+    $resource = {};
+    $resource->{tag} = 'RESOURCE';
+
+    # Attributes
+    $name = $vo_resource->get_name;
+    $id = $vo_resource->get_ID;
+    $type = $vo_resource->get_type;
+    $resource->{attributes}{name} = $name if defined($name);
+    $resource->{attributes}{ID} = $id if defined($id);
+    $resource->{attributes}{type} = $type if defined($type);
+
+    # Child elements
+    foreach $node ($vo_resource->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'DESCRIPTION') {
+	    push(@{$resource->{elements}}, _convert_description($node));
+	} elsif ($tag eq 'INFO') {
+	    push(@{$resource->{elements}}, _convert_info($node));
+	} elsif ($tag eq 'COOSYS') {
+	    push(@{$resource->{elements}}, _convert_coosys($node));
+	} elsif ($tag eq 'PARAM') {
+	    push(@{$resource->{elements}}, _convert_param($node));
+	} elsif ($tag eq 'LINK') {
+	    push(@{$resource->{elements}}, _convert_link($node));
+	} elsif ($tag eq 'TABLE') {
+	    push(@{$resource->{elements}}, _convert_table($node));
+	} elsif ($tag eq 'RESOURCE') {
+	    push(@{$resource->{elements}}, _convert_resource($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for RESOURCE child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($resource);
+}
+=cut
+#------------------------------------------------------------------------------
+
+sub _convert_description($)
+{
+    my($dom_description) = @_;
+    my($description);
+    my($text);
+
+    $description = {};
+    $description->{tag} = 'DESCRIPTION';
+
+    # Attributes (none)
+
+    # Child elements (none)
+
+    # Text content (use all text)
+    $text = $dom_description->textContent;
+    $description->{text} = $text;
+
+    return($description);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_definitions($)
+{
+    my($dom_definitions) = @_;
+    my($definitions);
+    my($node, $tag);
+
+    $definitions = {};
+    $definitions->{tag} = 'DEFINITIONS';
+
+    # Attributes (none)
+
+    # Child elements
+    foreach $node ($dom_definitions->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'COOSYS') {
+	    push(@{$definitions->{elements}}, _convert_coosys($node));
+	} elsif ($tag eq 'PARAM') {
+	    push(@{$definitions->{elements}}, _convert_param($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for DEFINITIONS child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($definitions);
+}
+
+#------------------------------------------------------------------------------
+=pod
+sub _convert_info($)
+{
+    my($dom_info) = @_;
+    my($vo_info);
+    my($info);
+    my($id, $name, $value);
+    my($text);
+
+    $vo_info = Astro::VO::VOTable::INFO->new($dom_info);
+    $info = {};
+    $info->{tag} = 'INFO';
+
+    # Attributes
+    $id = $vo_info->get_ID;
+    $name = $vo_info->get_name;
+    $value = $vo_info->get_value;
+    $info->{attributes}{ID} = $id if defined($id);
+    $info->{attributes}{name} = $name if defined($name);
+    $info->{attributes}{value} = $value if defined($value);
+
+    # Child elements (none)
+
+    # Text content (ignore whitespace)
+    $text = $vo_info->get;
+    $info->{text} = $text if $text =~ /\S/;
+
+    return($info);
+}
+=cut
+#------------------------------------------------------------------------------
+
+sub _convert_param($)
+{
+    my($dom_param) = @_;
+    my($param);
+    my($name, $value);
+    my($node, $tag);
+
+    $param = {};
+    $param->{tag} = 'PARAM';
+
+    # Attributes
+    foreach $name (qw(ID unit datatype precision width ref name ucd utype
+		      value arraysize)) {
+	$value = $dom_param->getAttribute($name);
+	$param->{attributes}{$name} = $value if defined($value);
+    }
+
+    # Child elements
+    foreach $node ($dom_param->childNodes) {
+ 	$tag = $node->nodeName;
+ 	if ($tag eq 'DESCRIPTION') {
+ 	    push(@{$param->{elements}}, _convert_description($node));
+ 	} elsif ($tag eq 'VALUES') {
+ 	    push(@{$param->{elements}}, _convert_values($node));
+ 	} elsif ($tag eq 'LINK') {
+ 	    push(@{$param->{elements}}, _convert_link($node));
+ 	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+ 	} else {
+ 	    die("Invalid tag for PARAM child: $tag!");
+ 	}
+    }
+
+    # Text content (none)
+
+    return($param);
+}
+
+#------------------------------------------------------------------------------
+=pod
+sub _convert_table($)
+{
+    my($dom_table) = @_;
+    my($vo_table);
+    my($table);
+    my($id, $name, $ref);
+    my($node, $tag);
+
+    $vo_table = Astro::VO::VOTable::TABLE->new($dom_table);
+    $table = {};
+    $table->{tag} = 'TABLE';
+
+    # Attributes
+    $id = $vo_table->get_ID;
+    $name = $vo_table->get_name;
+    $ref = $vo_table->get_ref;
+    $table->{attributes}{ID} = $id if defined($id);
+    $table->{attributes}{name} = $name if defined($name);
+    $table->{attributes}{ref} = $ref if defined($ref);
+
+    # Child elements
+    foreach $node ($vo_table->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'DESCRIPTION') {
+	    push(@{$table->{elements}}, _convert_description($node));
+	} elsif ($tag eq 'FIELD') {
+	    push(@{$table->{elements}}, _convert_field($node));
+	} elsif ($tag eq 'PARAM') {
+	    push(@{$table->{elements}}, _convert_param($node));
+	} elsif ($tag eq 'GROUP') {
+	    push(@{$table->{elements}}, _convert_group($node));
+	} elsif ($tag eq 'LINK') {
+	    push(@{$table->{elements}}, _convert_link($node));
+	} elsif ($tag eq 'DATA') {
+	    push(@{$table->{elements}}, _convert_data($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for TABLE child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($table);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_field($)
+{
+    my($dom_field) = @_;
+    my($vo_field);
+    my($field);
+    my($id, $unit, $datatype, $precision, $width, $ref, $name, $ucd, $utype,
+       $arraysize, $type);
+    my($node, $tag);
+
+    $vo_field = Astro::VO::VOTable::FIELD->new($dom_field);
+    $field = {};
+    $field->{tag} = 'FIELD';
+
+    # Attributes
+    $id = $vo_field->get_ID;
+    $unit = $vo_field->get_unit;
+    $datatype = $vo_field->get_datatype;
+    $precision = $vo_field->get_precision;
+    $width = $vo_field->get_width;
+    $ref = $vo_field->get_ref;
+    $name = $vo_field->get_name;
+    $ucd = $vo_field->get_ucd;
+    $utype = $vo_field->get_utype;
+    $arraysize = $vo_field->get_arraysize;
+    $type = $vo_field->get_type;
+    $field->{attributes}{ID} = $id if defined($id);
+    $field->{attributes}{unit} = $unit if defined($unit);
+    $field->{attributes}{datatype} = $datatype if defined($datatype);
+    $field->{attributes}{precision} = $precision if defined($precision);
+    $field->{attributes}{width} = $width if defined($width);
+    $field->{attributes}{ref} = $ref if defined($ref);
+    $field->{attributes}{name} = $name if defined($name);
+    $field->{attributes}{ucd} = $ucd if defined($ucd);
+    $field->{attributes}{utype} = $utype if defined($utype);
+    $field->{attributes}{arraysize} = $arraysize if defined($arraysize);
+    $field->{attributes}{type} = $type if defined($type);
+
+    # Child elements
+    foreach $node ($vo_field->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'DESCRIPTION') {
+	    push(@{$field->{elements}}, _convert_description($node));
+	} elsif ($tag eq 'VALUES') {
+	    push(@{$field->{elements}}, _convert_values($node));
+	} elsif ($tag eq 'LINK') {
+	    push(@{$field->{elements}}, _convert_link($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for FIELD child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($field);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_group($)
+{
+    my($dom_group) = @_;
+    my($vo_group);
+    my($group);
+    my($id, $name, $ref, $ucd, $utype);
+    my($node, $tag);
+
+    $vo_group = Astro::VO::VOTable::GROUP->new($dom_group);
+    $group = {};
+    $group->{tag} = 'GROUP';
+
+    # Attributes
+    $id = $vo_group->get_ID;
+    $name = $vo_group->get_name;
+    $ref = $vo_group->get_ref;
+    $ucd = $vo_group->get_ucd;
+    $utype = $vo_group->get_utype;
+    $group->{attributes}{ID} = $id if defined($id);
+    $group->{attributes}{name} = $name if defined($name);
+    $group->{attributes}{ref} = $ref if defined($ref);
+    $group->{attributes}{ucd} = $ucd if defined($ucd);
+    $group->{attributes}{utype} = $utype if defined($utype);
+
+    # Child elements
+    foreach $node ($vo_group->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'FIELD') {
+	    push(@{$group->{elements}}, _convert_field($node));
+	} elsif ($tag eq 'PARAM') {
+	    push(@{$group->{elements}}, _convert_param($node));
+	} elsif ($tag eq 'GROUP') {
+	    push(@{$group->{elements}}, _convert_group($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for GROUP child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($group);
+}
+=cut
+#------------------------------------------------------------------------------
+
+sub _convert_values($)
+{
+    my($dom_values) = @_;
+    my($values);
+    my($name, $value);
+    my($node, $tag);
+
+    $values = {};
+    $values->{tag} = 'VALUES';
+
+    # Attributes
+    foreach $name (qw(ID type null ref)) {
+	$value = $dom_values->getAttribute($name);
+	$values->{attributes}{$name} = $value if defined($value);
+    }
+
+    # Child elements
+    foreach $node ($dom_values->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'MIN') {
+	    push(@{$values->{elements}}, _convert_min($node));
+	} elsif ($tag eq 'MAX') {
+	    push(@{$values->{elements}}, _convert_max($node));
+	} elsif ($tag eq 'OPTION') {
+	    push(@{$values->{elements}}, _convert_option($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for VALUES child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($values);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_min($)
+{
+    my($dom_min) = @_;
+    my($min);
+    my($value, $inclusive);
+
+    $min = {};
+    $min->{tag} = 'MIN';
+
+    # Attributes
+    foreach $name (qw(value inclusive)) {
+	$value = $dom_min->getAttribute($name);
+	$min->{attributes}{$name} = $value if defined($value);
+    }
+
+    # Child elements (none)
+
+    # Text content (none)
+
+    return($min);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_max($)
+{
+    my($dom_max) = @_;
+    my($max);
+    my($value, $inclusive);
+
+    $max = {};
+    $max->{tag} = 'MAX';
+
+    # Attributes
+    foreach $name (qw(value inclusive)) {
+	$value = $dom_max->getAttribute($name);
+	$max->{attributes}{$name} = $value if defined($value);
+    }
+
+    # Child elements (none)
+
+    # Text content (none)
+
+    return($max);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_option($)
+{
+    my($dom_option) = @_;
+    my($option);
+    my($name, $value);
+    my($node, $tag);
+
+    $option = {};
+    $option->{tag} = 'OPTION';
+
+    # Attributes
+    foreach $name (qw(name value)) {
+	$value = $dom_option->getAttribute($name);
+	$option->{attributes}{$name} = $value if defined($value);
+    }
+
+    # Child elements
+    foreach $node ($dom_option->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'OPTION') {
+	    push(@{$option->{elements}}, _convert_option($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for OPTION child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($option);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_link($)
+{
+    my($dom_link) = @_;
+    my($link);
+    my($name, $value);
+    my($text);
+
+    $link = {};
+    $link->{tag} = 'LINK';
+
+    # Attributes
+    foreach $name (qw(ID content-role content-type title value href gref
+		      action)) {
+	$value = $dom_link->getAttribute($name);
+	$link->{attributes}{$name} = $value if defined($value);
+    }
+
+    # Child elements (none)
+
+    # Text content (use all text)
+    $text = $dom_link->textContent;
+    $link->{text} = $text;
+
+    return($link);
+}
+
+#------------------------------------------------------------------------------
+=pod
+sub _convert_data($)
+{
+    my($dom_data) = @_;
+    my($vo_data);
+    my($data);
+    my($node, $tag);
+
+    $vo_data = Astro::VO::VOTable::DATA->new($dom_data);
+    $data = {};
+    $data->{tag} = 'DATA';
+
+    # Attributes (none)
+
+    # Child elements
+    foreach $node ($vo_data->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'TABLEDATA') {
+	    push(@{$data->{elements}}, _convert_tabledata($node));
+	} elsif ($tag eq 'BINARY') {
+	    push(@{$data->{elements}}, _convert_binary($node));
+	} elsif ($tag eq 'FITS') {
+	    push(@{$data->{elements}}, _convert_fits($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for DATA child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($data);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_tabledata($)
+{
+    my($dom_tabledata) = @_;
+    my($vo_tabledata);
+    my($tabledata);
+    my($node, $tag);
+
+    $vo_tabledata = Astro::VO::VOTable::TABLEDATA->new($dom_tabledata);
+    $tabledata = {};
+    $tabledata->{tag} = 'TABLEDATA';
+
+    # Attributes (none)
+
+    # Child elements
+    foreach $node ($vo_tabledata->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'TR') {
+	    push(@{$tabledata->{elements}}, _convert_tr($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for TABLEDATA child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($tabledata);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_td($)
+{
+    my($dom_td) = @_;
+    my($vo_td);
+    my($td);
+    my($text);
+
+    $vo_td = Astro::VO::VOTable::TD->new($dom_td);
+    $td = {};
+    $td->{tag} = 'TD';
+
+    # Attributes (none)
+
+    # Child elements (none)
+
+    # Text content (all)
+    $text = $vo_td->get;
+    $td->{text} = $text;
+
+    return($td);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_tr($)
+{
+    my($dom_tr) = @_;
+    my($vo_tr);
+    my($tr);
+    my($node, $tag);
+
+    $vo_tr = Astro::VO::VOTable::TR->new($dom_tr);
+    $tr = {};
+    $tr->{tag} = 'TR';
+
+    # Attributes (none)
+
+    # Child elements
+    foreach $node ($vo_tr->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'TD') {
+	    push(@{$tr->{elements}}, _convert_td($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for TR child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($tr);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_fits($)
+{
+    my($dom_fits) = @_;
+    my($vo_fits);
+    my($fits);
+    my($extnum);
+    my($node, $tag);
+
+    $vo_fits = Astro::VO::VOTable::FITS->new($dom_fits);
+    $fits = {};
+    $fits->{tag} = 'FITS';
+
+    # Attributes
+    $extnum = $vo_fits->get_extnum;
+    $fits->{attributes}{extnum} = $extnum if defined($extnum);
+
+    # Child elements
+    foreach $node ($vo_fits->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'STREAM') {
+	    push(@{$fits->{elements}}, _convert_stream($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for FITS child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($fits);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_binary($)
+{
+    my($dom_binary) = @_;
+    my($vo_binary);
+    my($binary);
+    my($node, $tag);
+
+    $vo_binary = Astro::VO::VOTable::BINARY->new($dom_binary);
+    $binary = {};
+    $binary->{tag} = 'BINARY';
+
+    # Attributes (none)
+
+    # Child elements
+    foreach $node ($vo_binary->childNodes) {
+	$tag = $node->nodeName;
+	if ($tag eq 'STREAM') {
+	    push(@{$binary->{elements}}, _convert_stream($node));
+	} elsif ($tag eq 'comment') {
+	} elsif ($tag eq 'text') {
+	} else {
+	    die("Invalid tag for BINARY child: $tag!");
+	}
+    }
+
+    # Text content (none)
+
+    return($binary);
+}
+
+#------------------------------------------------------------------------------
+
+sub _convert_stream($)
+{
+    my($dom_stream) = @_;
+    my($vo_stream);
+    my($stream);
+    my($type, $href, $actuate, $encoding, $expires, $rights);
+    my($text);
+
+    $vo_stream = Astro::VO::VOTable::STREAM->new($dom_stream);
+    $stream = {};
+    $stream->{tag} = 'STREAM';
+
+    # Attributes
+    $type = $vo_stream->get_type;
+    $href = $vo_stream->get_href;
+    $actuate = $vo_stream->get_actuate;
+    $encoding = $vo_stream->get_encoding;
+    $expires = $vo_stream->get_expires;
+    $rights = $vo_stream->get_rights;
+    $stream->{attributes}{type} = $type if defined($type);
+    $stream->{attributes}{href} = $href if defined($href);
+    $stream->{attributes}{actuate} = $actuate if defined($actuate);
+    $stream->{attributes}{encoding} = $encoding if defined($encoding);
+    $stream->{attributes}{expires} = $expires if defined($expires);
+    $stream->{attributes}{rights} = $rights if defined($rights);
+
+    # Child elements (none)
+
+    # Text content (all text)
+    $text = $vo_stream->get;
+    $stream->{text} = $text;
+
+    return($stream);
+}
+=cut
+#------------------------------------------------------------------------------
+
+sub _convert_coosys($)
+{
+    my($dom_coosys) = @_;
+    my($coosys);
+    my($name, $value);
+    my($node, $tag);
+    my($text);
+
+    $coosys = {};
+    $coosys->{tag} = 'COOSYS';
+
+    # Attributes
+    foreach $name (qw(ID equinox epoch system)) {
+	$value = $dom_coosys->getAttribute($name);
+	$coosys->{attributes}{$name} = $value if defined($value);
+    }
+
+    # Child elements (none)
+
+    # Text content (use all text)
+    $text = $dom_coosys->textContent;
+    $coosys->{text} = $text;
+
+    return($coosys);
+}
