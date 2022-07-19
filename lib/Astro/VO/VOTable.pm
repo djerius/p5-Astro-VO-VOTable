@@ -8,6 +8,32 @@ use warnings;
 
 our $VERSION = '1.1';
 
+# load all of the Astro::VO::VOTable modules:
+use Astro::VO::VOTable::INFO;
+use Astro::VO::VOTable::Element;
+use Astro::VO::VOTable::Document;
+use Astro::VO::VOTable::TABLEDATA;
+use Astro::VO::VOTable::DEFINITIONS;
+use Astro::VO::VOTable::RESOURCE;
+use Astro::VO::VOTable::GROUP;
+use Astro::VO::VOTable::FIELD;
+use Astro::VO::VOTable::VOTABLE;
+use Astro::VO::VOTable::FITS;
+use Astro::VO::VOTable::TD;
+use Astro::VO::VOTable::TR;
+use Astro::VO::VOTable::LINK;
+use Astro::VO::VOTable::DATA;
+use Astro::VO::VOTable::MAX;
+use Astro::VO::VOTable::STREAM;
+use Astro::VO::VOTable::BINARY;
+use Astro::VO::VOTable::COOSYS;
+use Astro::VO::VOTable::DESCRIPTION;
+use Astro::VO::VOTable::TABLE;
+use Astro::VO::VOTable::MIN;
+use Astro::VO::VOTable::VALUES;
+use Astro::VO::VOTable::OPTION;
+use Astro::VO::VOTable::PARAM;
+
 # COPYRIGHT
 
 1;
@@ -16,7 +42,8 @@ __END__
 
 =head1 SYNOPSIS
 
-use Astro::VO::VOTable;
+  # load all of the modules in the Astro::VO::VOTable namespace
+  use Astro::VO::VOTable;
 
 =head1 DESCRIPTION
 
