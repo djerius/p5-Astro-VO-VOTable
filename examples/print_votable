@@ -1,36 +1,27 @@
 #!/usr/bin/perl -w
 
-use blib '../blib';
+use v5.24;
+use warnings;
+
 use Astro::VO::VOTable;
 
-my($doc);
-my($votable);
-my($resource);
-my($table);
-my($data);
-my($tabledata);
-my($num_rows);
-my(@field);
-my($num_cols);
-my($tr);
-my($td);
-my($i, $j);
-
-$doc = Astro::VO::VOTable::Document->new_from_file($ARGV[0]) or die;
-$votable = $doc->get_VOTABLE or die;
-$resource = $votable->get_RESOURCE(0) or die;
-$table = $resource->get_TABLE(0) or die;
-$data = $table->get_DATA or die;
-$tabledata = $data->get_TABLEDATA or die;
-$num_rows = $table->get_num_rows or die;
-@field = $table->get_FIELD;
-$num_cols = @field;
+defined $ARGV[0] or die( "usage: $0 <filename>\n" );
+my $doc = Astro::VO::VOTable::Document->new_from_file($ARGV[0]) or die;
+my $votable = $doc->get_VOTABLE or die;
+my $resource = $votable->get_RESOURCE(0) or die;
+my $table = $resource->get_TABLE(0) or die;
+my $data = $table->get_DATA or die;
+my $tabledata = $data->get_TABLEDATA or die;
+my $num_rows = $table->get_num_rows or die;
+my @field = $table->get_FIELD;
+my $num_cols = @field;
 print "num_rows = $num_rows, num_cols = $num_cols\n";
-for ($i = 0; $i < $num_rows; $i++) {
-    $tr = $tabledata->get_TR($i) or die;
-    print "Row $i:\n";
-    for ($j = 0; $j < $num_cols; $j++) {
- 	$td = $tr->get_TD($j);
-	print "Column $j (", $field[$j]->get_name, "): ", $td->get, "\n";
+
+for my $i ( 0 .. $num_rows - 1 ) {
+    my $tr = $tabledata->get_TR($i) or die;
+    say "Row $i:";
+    for my $j ( keys @field ) {
+ 	my $td = $tr->get_TD($j);
+	say "Column $j (", $field[$j]->get_name, "): ", $td->get;
     }
 }

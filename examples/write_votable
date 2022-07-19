@@ -1,15 +1,18 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
+
+use v5.24;
+
+use warnings;
 
 # write_votable - Sample program illustrating the use of the VOTable
 # modules to build and print a VOTABLE document.
 
 # External modules
-use blib '../blib';
 use Astro::VO::VOTable;
 
 # FIELD element names, and cell data.
-my(@field_names) = qw(ID RA DEC);
-my(@rows) = (
+my @field_names = qw(ID RA DEC);
+my @rows = (
  	     ['A', '9.9', '8.8'],
  	     ['B', '7.7', '6.6'],
  	     ['C', '5.5', '4.4']
@@ -35,11 +38,9 @@ my $table = Astro::VO::VOTable::TABLE->new or die;
 $resource->set_TABLE($table);
 
 # Create and add the FIELD elements to the TABLE.
-my($i);
-my($field);
-for ($i = 0; $i < @field_names; $i++) {
-    $field = Astro::VO::VOTable::FIELD->new or die;
-    $field->set_name($field_names[$i]);
+for my $name ( @field_names ) {
+    my $field = Astro::VO::VOTable::FIELD->new or die;
+    $field->set_name($name);
     $table->append_FIELD($field);
 }
 
@@ -52,13 +53,11 @@ my $tabledata = Astro::VO::VOTable::TABLEDATA->new or die;
 $data->set_TABLEDATA($tabledata);
 
 # Create and append each TR element, and each TD element.
-my($tr, $td);
-my($j);
-for ($i = 0; $i < @rows; $i++) {
-    $tr = Astro::VO::VOTable::TR->new or die;
-    for ($j = 0; $j < @field_names; $j++) {
- 	$td = Astro::VO::VOTable::TD->new or die;
- 	$td->set($rows[$i][$j]);
+for my $row (@rows) {
+    my $tr = Astro::VO::VOTable::TR->new or die;
+    for my $data ( @$row ) {
+ 	my $td = Astro::VO::VOTable::TD->new or die;
+ 	$td->set($data);
  	$tr->append_TD($td);
     }
     $tabledata->append_TR($tr);
