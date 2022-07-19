@@ -82,7 +82,7 @@ use Astro::VO::VOTable::Element;
 our(@ISA) = qw(Astro::VO::VOTable::Element);
 
 # Module version.
-our $VERSION = 2.0;
+our $VERSION = 1.1;
 
 #******************************************************************************
 
