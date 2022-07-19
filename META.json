@@ -1,8 +1,8 @@
 {
-   "abstract" : "a really awesome library",
+   "abstract" : "VOTable document manipulation package",
    "author" : [
-      "Eric L Winter",
-      "Diab Jerius <djerius@cpan.org>"
+      "Diab Jerius <djerius@cpan.org>",
+      "Eric L Winter"
    ],
    "dynamic_config" : 0,
    "generated_by" : "Dist::Zilla version 6.025, CPAN::Meta::Converter version 2.150010",
@@ -54,6 +54,8 @@
             "Dist::Zilla::Plugin::PodWeaver" : "0",
             "Dist::Zilla::Plugin::Prereqs" : "0",
             "Dist::Zilla::Plugin::Prereqs::AuthorDeps" : "0",
+            "Dist::Zilla::Plugin::Readme::Brief" : "0",
+            "Dist::Zilla::Plugin::ReadmeAnyFromPod" : "0",
             "Dist::Zilla::Plugin::Regenerate" : "0",
             "Dist::Zilla::Plugin::RewriteVersion" : "0",
             "Dist::Zilla::Plugin::RunExtraTests" : "0",
@@ -129,103 +131,103 @@
    "provides" : {
       "Astro::VO::VOTable" : {
          "file" : "lib/Astro/VO/VOTable.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::BINARY" : {
          "file" : "lib/Astro/VO/VOTable/BINARY.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::COOSYS" : {
          "file" : "lib/Astro/VO/VOTable/COOSYS.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::DATA" : {
          "file" : "lib/Astro/VO/VOTable/DATA.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::DEFINITIONS" : {
          "file" : "lib/Astro/VO/VOTable/DEFINITIONS.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::DESCRIPTION" : {
          "file" : "lib/Astro/VO/VOTable/DESCRIPTION.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::Document" : {
          "file" : "lib/Astro/VO/VOTable/Document.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::Element" : {
          "file" : "lib/Astro/VO/VOTable/Element.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::FIELD" : {
          "file" : "lib/Astro/VO/VOTable/FIELD.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::FITS" : {
          "file" : "lib/Astro/VO/VOTable/FITS.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::GROUP" : {
          "file" : "lib/Astro/VO/VOTable/GROUP.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::INFO" : {
          "file" : "lib/Astro/VO/VOTable/INFO.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::LINK" : {
          "file" : "lib/Astro/VO/VOTable/LINK.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::MAX" : {
          "file" : "lib/Astro/VO/VOTable/MAX.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::MIN" : {
          "file" : "lib/Astro/VO/VOTable/MIN.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::OPTION" : {
          "file" : "lib/Astro/VO/VOTable/OPTION.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::PARAM" : {
          "file" : "lib/Astro/VO/VOTable/PARAM.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::RESOURCE" : {
          "file" : "lib/Astro/VO/VOTable/RESOURCE.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::STREAM" : {
          "file" : "lib/Astro/VO/VOTable/STREAM.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::TABLE" : {
          "file" : "lib/Astro/VO/VOTable/TABLE.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::TABLEDATA" : {
          "file" : "lib/Astro/VO/VOTable/TABLEDATA.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::TD" : {
          "file" : "lib/Astro/VO/VOTable/TD.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::TR" : {
          "file" : "lib/Astro/VO/VOTable/TR.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::VALUES" : {
          "file" : "lib/Astro/VO/VOTable/VALUES.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       },
       "Astro::VO::VOTable::VOTABLE" : {
          "file" : "lib/Astro/VO/VOTable/VOTABLE.pm",
-         "version" : "0.01"
+         "version" : "1.1"
       }
    },
    "release_status" : "stable",
@@ -240,7 +242,7 @@
          "web" : "https://github.com/djerius/p5-Astro-VO-VOTable"
       }
    },
-   "version" : "0.01",
+   "version" : "1.1",
    "x_generated_by_perl" : "v5.36.0",
    "x_serialization_backend" : "Cpanel::JSON::XS version 4.30",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later"
