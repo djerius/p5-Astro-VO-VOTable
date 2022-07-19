@@ -115,7 +115,7 @@ or via email to:
 
 or via email to:
 
- Eric L Winter
+ Diab Jerius <djerius@cpan.org>
 
 
 Idiosyncracies
