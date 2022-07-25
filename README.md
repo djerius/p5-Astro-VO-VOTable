@@ -8,7 +8,8 @@ version 1.1
 
 # SYNOPSIS
 
-use Astro::VO::VOTable;
+    # load all of the modules in the Astro::VO::VOTable namespace
+    use Astro::VO::VOTable;
 
 # DESCRIPTION
 

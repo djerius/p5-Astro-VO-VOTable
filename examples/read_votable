@@ -20,8 +20,9 @@ my $votable = $doc->get_VOTABLE or die;
 my $resource = $votable->get_RESOURCE(0) or die;
 
 # Get the first DESCRIPTION element and its contents.
-my $description = $resource->get_DESCRIPTION(0) or die;
-say $description->get;
+if ( my $description = $resource->get_DESCRIPTION(0) ) {
+    say $description->get;
+}
 
 # Get the first TABLE element.
 my $table = $resource->get_TABLE(0) or die;
@@ -33,6 +34,7 @@ say "field names are @field_names";
 # Get the DATA element.
 my $data = $table->get_DATA or die;
 
+$DB::single=1;
 # Get the TABLEDATA element.
 my $tabledata = $data->get_TABLEDATA or die;
 
@@ -60,12 +62,14 @@ say join("\t", $_, $table->get_row($_) )
 
 # Now go back and get the entire data table in one fell swoop.
 my $rows = $table->get_array or die;
-my $i = 0;
-for my $row ( $rows->@* ) {
-    my $j = 0;
-    say "i = ", $i, ", j = ", $j++, ", cell = $_"
-      for $row->@*;
-    ++$i;
+{
+    my $i = 0;
+    for my $row ( $rows->@* ) {
+        my $j = 0;
+        say "i = ", $i, ", j = ", $j++, ", cell = $_"
+          for $row->@*;
+        ++$i;
+    }
 }
 
 # Now go back and get the contents one cell at a time.

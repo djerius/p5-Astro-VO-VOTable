@@ -3,7 +3,6 @@ package Astro::VO::VOTable;
 # ABSTRACT: VOTable document manipulation package
 
 use strict;
-use diagnostics;
 use warnings;
 
 our $VERSION = '1.1';
