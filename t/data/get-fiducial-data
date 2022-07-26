@@ -1,0 +1,24 @@
+#! /bin/bash
+
+# Notes:
+# Simbad doesn't support RESPONSEFORMAT, just FORMAT
+
+get_data () {
+  table=$1
+  format=$2
+  output=$3
+
+  curl                                                  \
+    --output "$output"                                  \
+    --location                                          \
+    --form REQUEST=doQuery                              \
+    --form PHASE=RUN                                    \
+    --form FORMAT="$format"                             \
+    --form LANG=ADQL                                    \
+    --form "QUERY=SELECT * from $table"                 \
+  https://simbad.cds.unistra.fr/simbad/sim-tap/sync
+}
+
+get_data mesRot csv mesRot.csv
+get_data mesRot votable mesRot.binary.xml
+get_data mesRot votable/td mesRot.td.xml
